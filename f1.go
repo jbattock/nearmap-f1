@@ -21,6 +21,7 @@ func main() {
 }
 
 func parse_date_file(filename string) ([]int, []int, error) {
+	// format of our date file
 	const layoutISO = "2006-01-02"
 
 	var y []int
