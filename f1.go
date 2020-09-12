@@ -10,21 +10,29 @@ import (
 )
 
 func main() {
-	const layoutISO = "2006-01-02"
-
-	var y []int
-	var yhat []int
-
-	// open file
-	file, err := os.Open(os.Args[1])
-	defer file.Close()
+	y, yhat, err := parse_date_file(os.Args[1])
 
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	fmt.Println("Successfully Opened file")
+	fmt.Println("f1 score: ", f1_score(y, yhat))
+}
+
+func parse_date_file(filename string) ([]int, []int, error) {
+	const layoutISO = "2006-01-02"
+
+	var y []int
+	var yhat []int
+
+	// open file
+	file, err := os.Open(filename)
+	defer file.Close()
+
+	if err != nil {
+		return nil, nil, err
+	}
 
 	// Start reading from the file with a reader.
 	reader := bufio.NewReader(file)
@@ -41,18 +49,23 @@ func main() {
 
 		split := strings.Split(line, "|")
 
-		// check if date is a Thursday
 		date, _ := time.Parse(layoutISO, split[0])
 
+		// check if date is a Thursday
 		if date.Weekday() == 4 {
 			expected, _ := strconv.Atoi(split[1])
+			// need to trim newline before converting to int
 			split2 := strings.TrimSuffix(split[2], "\n")
 			predicted, _ := strconv.Atoi(split2)
 			y = append(y, expected)
 			yhat = append(yhat, predicted)
 		}
 	}
+	return y, yhat, nil
+}
 
+// calculates the f1 score from given data sets
+func f1_score(y []int, yhat []int) float64 {
 	identified := 0
 	total := 0
 	realPositive := 0
@@ -71,6 +84,5 @@ func main() {
 	percision := float64(identified) / float64(total)
 	recall := float64(identified) / float64(realPositive)
 	// calculate f1
-	f1 := 2 * (percision * recall) / (percision + recall)
-	fmt.Println("f1 score: ", f1)
+	return 2 * (percision * recall) / (percision + recall)
 }
