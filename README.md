@@ -1,1 +1,0 @@
-# nearmap-f1
